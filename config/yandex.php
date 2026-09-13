@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'proxy' => env('YANDEX_PROXY'),
     'html_reviews' => env('YANDEX_HTML_REVIEWS', true),
     'profile_dir' => env('YANDEX_PROFILE_DIR', storage_path('app/private/yandex-browser')),
     'transport' => env('YANDEX_TRANSPORT', 'browser'),

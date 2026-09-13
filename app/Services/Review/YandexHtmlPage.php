@@ -28,7 +28,7 @@ final class YandexHtmlPage
                 'Accept' => 'text/html',
                 'Accept-Language' => 'ru-RU,ru;q=0.9',
                 'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36',
-            ])->connectTimeout(10)->timeout(30)->withoutRedirecting()
+            ])->withOptions(YandexProxy::httpOptions())->connectTimeout(10)->timeout(30)->withoutRedirecting()
                 ->get('https://yandex.ru/maps/org/'.$id.'/reviews/', ['page' => $page]);
         } catch (ConnectionException) {
             throw new YandexReviewException('transient', 'Не удалось загрузить HTML Яндекс.Карт.');

@@ -245,7 +245,7 @@ class YandexReviewService extends AbstractService implements ReviewServiceInterf
                 'User-Agent' => $this->context->userAgent,
                 'Referer' => 'https://yandex.ru/maps/',
                 'X-Retpath-Y' => 'https://yandex.ru/maps/',
-            ])->connectTimeout(10)->timeout(30)->withoutRedirecting()
+            ])->withOptions(YandexProxy::httpOptions())->connectTimeout(10)->timeout(30)->withoutRedirecting()
                 ->get('https://yandex.ru/maps/api/'.$endpoint, $query);
         } catch (ConnectionException) {
             throw new YandexReviewException('transient', 'Не удалось связаться с Яндекс.Картами.');

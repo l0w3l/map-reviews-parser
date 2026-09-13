@@ -2,6 +2,7 @@
 
 namespace App\Services\Review\Browser;
 
+use App\Services\Review\YandexProxy;
 use App\Services\Review\YandexReviewException;
 use HeadlessChromium\Browser\ProcessAwareBrowser;
 use HeadlessChromium\BrowserFactory;
@@ -21,6 +22,7 @@ class YandexBrowser
 
     private function open(bool $headless): void
     {
+        $proxyOptions = YandexProxy::browserOptions();
         $profile = (string) config('yandex.profile_dir');
         if (! is_dir($profile) && ! mkdir($profile, 0700, true) && ! is_dir($profile)) {
             throw new YandexReviewException('session_required', 'Не удалось создать профиль Chromium.');
@@ -35,6 +37,7 @@ class YandexBrowser
         }
         $this->profileLock = $lock;
         $this->browser = (new BrowserFactory(config('yandex.chrome_binary')))->createBrowser([
+            ...$proxyOptions,
             'headless' => $headless, 'userDataDir' => $profile,
             'startupTimeout' => 20, 'sendSyncDefaultTimeout' => 65000,
         ]);
