@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Review;
 
+use App\Services\Review\Enums\CollectionOutcome;
 use Spatie\LaravelData\Data;
 
 final class ReviewsData extends Data
@@ -13,6 +14,6 @@ final class ReviewsData extends Data
         public array $reviews,
         public int $available_count,
         public int $pages,
-        public bool $source_limited = false,
+        public CollectionOutcome $outcome = CollectionOutcome::Complete,
     ) {}
 }

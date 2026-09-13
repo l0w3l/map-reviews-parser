@@ -22,8 +22,7 @@ input {
 }
 button,
 a,
-input,
-summary {
+input {
     -webkit-tap-highlight-color: transparent;
 }
 a {
@@ -58,8 +57,7 @@ input {
 }
 input:focus-visible,
 button:focus-visible,
-a:focus-visible,
-summary:focus-visible {
+a:focus-visible {
     outline: 3px solid #8bbfa6;
     outline-offset: 3px;
 }
@@ -201,21 +199,6 @@ p {
 .grow {
     flex: 1;
     min-width: 0;
-}
-details {
-    margin-top: 16px;
-}
-summary {
-    color: #748078;
-    cursor: pointer;
-    font-size: 12px;
-}
-.search-result {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 0;
-    border-bottom: 1px solid #eee;
 }
 .content-layout {
     display: grid;

@@ -1,8 +1,8 @@
 <?php
 
-use App\Services\Review\YandexHtmlPage;
-use App\Services\Review\YandexProxy;
-use App\Services\Review\YandexReviewException;
+use App\Services\Review\Providers\Yandex\YandexHtmlPage;
+use App\Services\Review\Providers\Yandex\YandexProxy;
+use App\Services\Review\Providers\Yandex\YandexReviewException;
 use Illuminate\Support\Facades\Http;
 
 it('routes HTML through the configured proxy without a bypass list', function () {
@@ -28,11 +28,7 @@ it('rejects malformed proxies without disclosing credentials', function () {
     }
 });
 
-it('configures Chromium SOCKS5 and refuses unsupported authentication', function () {
-    config(['yandex.proxy' => 'socks5h://proxy.test:1080']);
-    expect(YandexProxy::browserOptions())->toBe(['proxyServer' => 'socks5://proxy.test:1080']);
-    config(['yandex.proxy' => 'socks5h://user:secret@proxy.test:1080']);
-    expect(fn () => YandexProxy::browserOptions())->toThrow(YandexReviewException::class);
+it('uses direct HTTP when no proxy is configured', function () {
     config(['yandex.proxy' => '']);
-    expect(YandexProxy::browserOptions())->toBe([])->and(YandexProxy::httpOptions())->toBe([]);
+    expect(YandexProxy::httpOptions())->toBe([]);
 });

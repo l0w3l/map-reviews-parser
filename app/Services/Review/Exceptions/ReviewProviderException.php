@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Review;
+namespace App\Services\Review\Exceptions;
 
 use RuntimeException;
 
-final class YandexReviewException extends RuntimeException
+class ReviewProviderException extends RuntimeException
 {
     public function __construct(public readonly string $reason, string $message)
     {

@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace App\Services\Review;
 
-use App\Data\Review\YandexSessionData;
+use App\Services\Review\Exceptions\ReviewProviderException;
+use App\Services\Review\Providers\Yandex\YandexHtmlPage;
+use App\Services\Review\Providers\Yandex\YandexReviewService;
 use Lowel\LaravelServiceMaker\Services\ServiceFactoryInterface;
 
 class ReviewServiceFactory implements ServiceFactoryInterface
 {
-    /** @param array<string, string> $params */
+    /** @param array<string, mixed> $params */
     public function get(array $params = []): ReviewServiceInterface
     {
-        return $this->getYandex(YandexSessionData::from($params));
+        return match ($params['provider'] ?? 'yandex') {
+            'yandex' => $this->getYandex(),
+            default => throw new ReviewProviderException('unsupported_provider', 'Площадка не поддерживается.'),
+        };
     }
 
-    public function getYandex(YandexSessionData $context = new YandexSessionData): YandexReviewService
+    public function getYandex(): YandexReviewService
     {
-        return new YandexReviewService($context);
+        return new YandexReviewService(
+            new YandexHtmlPage,
+            pauseMilliseconds: (int) config('yandex.pause_milliseconds', 500),
+            maxPages: (int) config('yandex.max_pages', 100),
+        );
     }
 }
