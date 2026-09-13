@@ -1,0 +1,115 @@
+name: yandex-reviews
+
+x-app: &app
+    image: yandex-reviews-app:local
+    build:
+        context: .
+        target: app
+    env_file: ${DEPLOY_ENV_FILE:-.env.production}
+    environment:
+        APP_ENV: production
+        APP_DEBUG: 'false'
+        DB_CONNECTION: pgsql
+        DB_HOST: db
+        DB_PORT: '5432'
+        DB_DATABASE: reviews
+        DB_USERNAME: reviews
+        DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.production}
+        QUEUE_CONNECTION: database
+        SESSION_DRIVER: database
+        CACHE_STORE: database
+        LOG_CHANNEL: stderr
+        DB_QUEUE_RETRY_AFTER: '720'
+    volumes:
+        - storage:/var/www/html/storage
+    init: true
+    logging:
+        driver: json-file
+        options:
+            max-size: 10m
+            max-file: '3'
+
+services:
+    db:
+        image: postgres:17-bookworm
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: reviews
+            POSTGRES_USER: reviews
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.production}
+        volumes:
+            - database:/var/lib/postgresql/data
+        healthcheck:
+            test: [CMD-SHELL, 'pg_isready -U reviews -d reviews']
+            interval: 5s
+            timeout: 5s
+            retries: 20
+        logging:
+            driver: json-file
+            options:
+                max-size: 10m
+                max-file: '3'
+
+    migrate:
+        <<: *app
+        restart: 'no'
+        command: [php, artisan, migrate, --force]
+        depends_on:
+            db:
+                condition: service_healthy
+
+    app:
+        <<: *app
+        restart: unless-stopped
+        depends_on:
+            migrate:
+                condition: service_completed_successfully
+
+    worker:
+        <<: *app
+        restart: unless-stopped
+        command:
+            [
+                php,
+                artisan,
+                queue:work,
+                --sleep=3,
+                --tries=3,
+                --timeout=600,
+                --max-time=3600,
+            ]
+        stop_grace_period: 660s
+        depends_on:
+            migrate:
+                condition: service_completed_successfully
+
+    web:
+        build:
+            context: .
+            target: web
+        image: yandex-reviews-web:local
+        restart: unless-stopped
+        ports:
+            - '${BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-8080}:80'
+        depends_on:
+            app:
+                condition: service_started
+        healthcheck:
+            test:
+                [
+                    CMD-SHELL,
+                    'wget -q -O /dev/null http://127.0.0.1/up || exit 1',
+                ]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 20s
+        logging:
+            driver: json-file
+            options:
+                max-size: 10m
+                max-file: '3'
+
+volumes:
+    database:
+    storage:
